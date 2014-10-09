@@ -1,0 +1,11 @@
+{
+  "name": "yubico/u2fval-client",
+  "description": "Client library for communicating with a U2FVAL server.",
+  "license": "BSD-2-Clause",
+  "require": {
+    "lib-curl": "*"
+  },
+  "autoload": {
+    "classmap": ["src/"]
+  }
+}

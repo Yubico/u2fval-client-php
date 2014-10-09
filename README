@@ -1,0 +1,16 @@
+== u2fval-client
+Client library for communicating with a U2FVAL server. This is intended to be
+used for PHP applications which wish to implement 2FA using U2F.
+
+=== License
+The project is licensed under a BSD license.  See the file COPYING for
+exact wording.  For any copyright year range specified as YYYY-ZZZZ in
+this package note that the range specifies every single year in that
+closed interval.
+
+=== Dependencies
+Dependencies are managed with composer, see https://getcomposer.org/
+for information about obtaining that.
+To setup dependencies when composer is availabel, run:
+
+  $ composer.phar install
