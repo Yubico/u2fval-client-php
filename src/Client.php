@@ -1,47 +1,53 @@
 <?php
 
 /* Copyright (c) 2014 Yubico AB
-* All rights reserved.
-*
-* Redistribution and use in source and binary forms, with or without
-* modification, are permitted provided that the following conditions are
-* met:
-*
-*   * Redistributions of source code must retain the above copyright
-*     notice, this list of conditions and the following disclaimer.
-*
-*   * Redistributions in binary form must reproduce the above
-*     copyright notice, this list of conditions and the following
-*     disclaimer in the documentation and/or other materials provided
-*     with the distribution.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-* "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-* LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-* A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-* OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-* SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-* LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-* DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-* THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-* (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-* OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *   * Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *
+ *   * Redistributions in binary form must reproduce the above
+ *     copyright notice, this list of conditions and the following
+ *     disclaimer in the documentation and/or other materials provided
+ *     with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
 namespace U2fVal;
 
 class Client {
   private $endpoint;
-  private $username;
-  private $password;
+  private $auth;
 
-  public function __construct($endpoint, $clientId, $clientPassword) {
+  public function __construct($endpoint, $auth) {
     if(substr($endpoint, -1) != '/') {
       $endpoint .= '/';
     }
     $this->endpoint = $endpoint;
-    $this->username = $clientId;
-    $this->password = $clientPassword;
+    $this->auth = $auth;
+  }
+
+  public static function withApiToken($endpoint, $apiToken) {
+    return new Client($endpoint, new ApiTokenAuth($apiToken));
+  }
+
+  public static function withHttpAuth($endpoint, $username, $password, $type=CURLAUTH_DIGEST) {
+    return new Client($endpoint, new HttpAuth($username, $password, $type));
   }
 
   private static function filtered($path, $filter) {
@@ -61,16 +67,16 @@ class Client {
     return $data;
   }
 
-  private function curl_begin($path) {
+  private function curl_begin($path, & $headers) {
     $ch = curl_init($this->endpoint . $path);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch, CURLOPT_USERPWD, $this->username . ':' . $this->password);
-    curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
     curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    $this->auth->authenticate($ch, $headers);
     return $ch;
   }
 
-  private function curl_complete($ch) {
+  private function curl_complete($ch, & $headers) {
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
     $res = curl_exec($ch);
     if($res === false) {
       curl_close($ch);
@@ -98,19 +104,18 @@ class Client {
       return array('errorCode' => -1, 'errorMessage' => 'cURL not installed');
     }
 
-    $ch = $this->curl_begin($path);
+    $headers = array();
+    $ch = $this->curl_begin($path, $headers);
     if($data) {
       if(!is_string($data)) {
         $data = json_encode($data);
       }
       curl_setopt($ch, CURLOPT_POST, 1);
-      curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-        'Content-Type: application/json',
-        'Content-Length: ' . strlen($data))
-      );
+      $headers[] = 'Content-Type: application/json';
+      $headers[] = 'Content-Length: ' . strlen($data);
       curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
     }
-    return $this->curl_complete($ch);
+    return $this->curl_complete($ch, $headers);
   }
 
   private function curl_delete($path) {
@@ -118,9 +123,10 @@ class Client {
       return array('errorCode' => -1, 'errorMessage' => 'cURL not installed');
     }
 
-    $ch = $this->curl_begin($path);
+    $headers = array();
+    $ch = $this->curl_begin($path, $headers);
     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
-    return $this->curl_complete($ch);
+    return $this->curl_complete($ch, $headers);
   }
 
   public function test_connection() {
@@ -175,18 +181,34 @@ class Client {
   }
 }
 
-function has_devices($authData) {
-  if(is_string($authData)) {
-    $authData = json_decode($authData, true);
-  }
-  return sizeof($authData['authenticateRequests']) > 0;
-}
-
 function is_error($data) {
   if(is_string($data)) {
     $data = json_decode($data, true);
   }
   return isset($data['errorCode']);
+}
+
+class ApiTokenAuth {
+  public function __construct($apiToken) {
+    $this->apiToken = $apiToken;
+  }
+
+  public function authenticate($ch, & $headers) {
+    $headers[] = 'Authorization: Bearer ' . $this->apiToken;
+  }
+}
+
+class HttpAuth {
+  public function __construct($username, $password, $type=CURLAUTH_DIGEST) {
+    $this->username = $username;
+    $this->password = $password;
+    $this->authtype = $authtype;
+  }
+
+  public function authenticate($ch, & $headers) {
+    curl_setopt($ch, CURLOPT_USERPWD, $this->username . ':' . $this->password);
+    curl_setopt($ch, CURLOPT_HTTPAUTH, $this->authtype);
+  }
 }
 
 ?>
