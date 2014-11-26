@@ -50,6 +50,10 @@ class Client {
     return new Client($endpoint, new HttpAuth($username, $password, $type));
   }
 
+  public static function withNoAuth($endpoint) {
+    return new Client($endpoint, new NoAuth());
+  }
+
   private static function filtered($path, $filter) {
     if($filter !== NULL) {
       $path .= '?filter=' . $filter;
@@ -186,6 +190,10 @@ function is_error($data) {
     $data = json_decode($data, true);
   }
   return isset($data['errorCode']);
+}
+
+class NoAuth {
+  public function authenticate($ch, & $headers) {}
 }
 
 class ApiTokenAuth {

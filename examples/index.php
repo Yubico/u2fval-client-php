@@ -29,12 +29,7 @@
  */
 
 require_once('../vendor/autoload.php');
-
-// U2FVAL Configuration - Edit this line:
-$u2fval = U2fVal\Client::withApiToken(
-  'https://u2fval.appspot.com/api',               // URL of the U2FVAL service.
-  'ng-eYx5bqEXrRDAiRcbnb_uUuNDLkQGiG_Ry3OVxDCk='  // API token for use with service.
-);
+require_once('config.php');
 
 ?>
 

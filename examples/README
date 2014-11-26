@@ -1,0 +1,12 @@
+== Example
+A passwordless sample server allowing a user to register and authenticate U2F
+devices with a U2FVAL server.
+
+=== Setup
+To use, you will need to first install the package dependencies with composer.
+In the main project directory run:
+
+  $ composer.phar install
+
+You will also need to configure the endpoint and authentication to use for the
+U2FVAL server. Edit config.php and fill in the required values.
