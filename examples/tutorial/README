@@ -44,3 +44,11 @@ it can be navigated to. It doesn't do much as of now, but we'll change that
 soon. When ready, move on to the next step:
 
   git checkout tutorial-3
+
+==== Registering devices
+We've now added a register-device.php page for registering a new U2F device.
+The page calls the U2FVAL server to create a new U2F device registration,
+passes the data to the browsers U2F JavaScript API, and then passes the result
+back to the server. Test it out by registering a U2F device. When ready:
+
+  git checkout tutorial-4

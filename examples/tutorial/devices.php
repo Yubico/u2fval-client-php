@@ -45,6 +45,7 @@ if(empty($devices)) {
 }
 
 ?>
+          <p><a href="register-device.php">Register a device</a>.</p>
           <p><a href="welcome.php">Back</a>.</p>
         </div>
       </div>
