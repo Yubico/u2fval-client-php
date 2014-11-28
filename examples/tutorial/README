@@ -31,3 +31,16 @@ to authenticate.php which validate them, and if successful, forwards the user
 to welcome.php. Try it out for yourself, then move on to the next step:
 
   git checkout tutorial-2
+
+=== U2F Device management
+The next step is to allow users to register new U2F devices. The user needs to
+be able to register new devices, list registered devices, and unregister
+devices.
+
+==== Listing devices
+We've added a devices.php page which just lists devices. Take a look at the
+source code. We've also added a link from the welcome.php page to it so that
+it can be navigated to. It doesn't do much as of now, but we'll change that
+soon. When ready, move on to the next step:
+
+  git checkout tutorial-3
