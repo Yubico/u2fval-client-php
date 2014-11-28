@@ -40,6 +40,7 @@ if(empty($devices)) {
     }
     echo "<strong>Registered: ".date("H:i D M j", strtotime($device['created']))."</strong><br/>";
     echo "<strong>Last used: ".date("H:i D M j", strtotime($device['lastUsed']))."</strong><br/>";
+    echo "<a href=\"unregister-device.php?handle=".$device['handle']."\">Unregister</a>";
     echo "</div>";
   }
 }

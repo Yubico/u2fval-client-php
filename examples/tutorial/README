@@ -52,3 +52,11 @@ passes the data to the browsers U2F JavaScript API, and then passes the result
 back to the server. Test it out by registering a U2F device. When ready:
 
   git checkout tutorial-4
+
+==== Unregistering devices
+Since the user can register a device, it makes sense to be able to unregister
+it as well. We've added unregister-device.php for that purpose, and slightly
+altered devices.php to use it. Try unregistering the U2F device that you
+registered in the last step. We're almost done, go on to the last step:
+
+  git checkout tutorial-5
