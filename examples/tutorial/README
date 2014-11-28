@@ -12,3 +12,22 @@ Once ready, move on to the next step:
   git checkout tutorial-N
 
 ...where N is replaced by the step number, 1-5.
+
+=== Requirements
+You will need to have installed the u2fval-client-php library as described in
+the main README. You will also need a web server with PHP support, accessible
+using a real domain name. You can use the hosts file for this. The reason this
+is needed is that the browser won't allow U2F actions performed on an invalid
+Application ID. Lastly, you will need to set up an application on a U2FVAL
+server with the proper AppID, and enter those credentials in the config.php
+file in the examples directory.
+
+=== Starting point
+To start out, there is a basic site which accepts username and password for
+authentication. You can try it out by going to index.php. The usernames and
+passwords are hardcoded. The starting point for the site is index.php, which
+provides a form for logging in, taking a username and password. These are sent
+to authenticate.php which validate them, and if successful, forwards the user
+to welcome.php. Try it out for yourself, then move on to the next step:
+
+  git checkout tutorial-2
