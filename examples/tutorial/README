@@ -60,3 +60,16 @@ altered devices.php to use it. Try unregistering the U2F device that you
 registered in the last step. We're almost done, go on to the last step:
 
   git checkout tutorial-5
+
+=== U2F Authentication
+Now that we've got device management out of the way, we need to implement the
+actual U2F authentication as part of the login flow. We do this by modifying
+authenticate.php to check for registered U2F devices, and require U2F
+authentication for those who have it. Go ahead and try loggin in, registering
+a U2F device, then logging out and back in again. This time you will need to
+authenticate using the registered U2F device.
+
+=== The End
+That's it! That's all there is to it. The U2FVAL server keeps track of our
+users and their devices, and provides us with everything we need to give our
+users a much more secure authentication.
