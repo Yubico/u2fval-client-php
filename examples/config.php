@@ -1,5 +1,9 @@
 <?php
 
+/*
+ * Configuration file for all examples.
+ */
+
 require_once('../vendor/autoload.php');
 
 // U2FVAL Configuration - Using API token authentication:
