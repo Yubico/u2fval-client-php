@@ -84,20 +84,19 @@ class Client {
     $res = curl_exec($ch);
     if($res === false) {
       curl_close($ch);
-      return array('errorCode' => -1, 'errorMessage' => 'Server unreachable');
+      throw new ServerUnreachableException('Server unreachable');
     }
     $res = json_decode($res, true);
 
     $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
     if($status >= 400) {
-      $res = array('errorCode' => $status);
       if($status == 401) {
-        $res['errorMessage'] = 'Invalid credentials';
+        throw new BadAuthException($res['errorMessage'], $res['errorCode']);
       } else if($status == 404) {
-        $res['errorMessage'] = 'Resource not found';
+        throw new NotFoundException($res['errorMessage'], $res['errorCode']);
       } else {
-        $res['errorMessage'] = 'Server responded: ' . $status;
+        throw new U2fValException($res['errorMessage'], $res['errorCode']);
       }
     }
     return $res;
@@ -105,7 +104,7 @@ class Client {
 
   private function curl_send($path, $data=null) {
     if(!function_exists('curl_init')) {
-      return array('errorCode' => -1, 'errorMessage' => 'cURL not installed');
+      trigger_error('cURL not installed', E_USER_ERROR);
     }
 
     $headers = array();
@@ -124,7 +123,7 @@ class Client {
 
   private function curl_delete($path) {
     if(!function_exists('curl_init')) {
-      return array('errorCode' => -1, 'errorMessage' => 'cURL not installed');
+      trigger_error('cURL not installed', E_USER_ERROR);
     }
 
     $headers = array();
@@ -133,19 +132,8 @@ class Client {
     return $this->curl_complete($ch, $headers);
   }
 
-  public function test_connection() {
-    $resp = $this->curl_send('');
-    if(!is_error($resp) && ($resp === NULL || !isset($resp['trustedFacets']))) {
-      $resp = array(
-        'errorCode' => -1,
-        'errorMessage' => 'Invalid response from server'
-      );
-    }
-    if(is_error($resp)) {
-      return $resp;
-    }
-
-    return true;
+  public function get_trusted_facets() {
+    return json_encode($this->curl_send(''));
   }
 
   public function list_devices($username, $filter=NULL) {
@@ -153,11 +141,7 @@ class Client {
   }
 
   public function register_begin($username) {
-    $resp = $this->curl_send($username . '/register');
-    if(!is_error($resp)) {
-      return json_encode($resp);
-    }
-    return $resp;
+    return json_encode($this->curl_send($username . '/register'));
   }
 
   public function register_complete($username, $registerResponse, $properties=NULL, $filter=NULL) {
@@ -171,11 +155,13 @@ class Client {
   }
 
   public function auth_begin($username) {
-    $resp = $this->curl_send($username . '/authenticate');
-    if(!is_error($resp)) {
-      return json_encode($resp);
+    try {
+      return json_encode($this->curl_send($username . '/authenticate'));
+    } catch( U2fValException $e ) {
+      if($e->getCode() == 400) {
+        throw new NoDevicesException($e['errorMessage'], $e['errorCode']);
+      }
     }
-    return $resp;
   }
 
   public function auth_complete($username, $authenticateResponse, $properties=NULL, $filter=NULL) {
@@ -183,13 +169,6 @@ class Client {
     $authData = array('authenticateResponse' => json_decode($authenticateResponse, true));
     return $this->curl_send($path, self::add_props($authData, $properties));
   }
-}
-
-function is_error($data) {
-  if(is_string($data)) {
-    $data = json_decode($data, true);
-  }
-  return isset($data['errorCode']);
 }
 
 class NoAuth {
