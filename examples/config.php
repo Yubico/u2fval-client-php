@@ -4,7 +4,7 @@
  * Configuration file for all examples.
  */
 
-require_once('../vendor/autoload.php');
+require_once(dirname(__FILE__).'/../vendor/autoload.php');
 
 // U2FVAL Configuration - Using API token authentication:
 $u2fval = U2fVal\Client::withApiToken(
