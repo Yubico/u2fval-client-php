@@ -11,6 +11,6 @@ closed interval.
 === Dependencies
 Dependencies are managed with composer, see https://getcomposer.org/
 for information about obtaining that.
-To setup dependencies when composer is availabel, run:
+To setup dependencies when composer is available, run:
 
   $ composer.phar install
