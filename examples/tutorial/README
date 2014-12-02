@@ -1,0 +1,14 @@
+== U2FVAL Tutorial
+This tutorial will show an example of how to add U2F capability to an existing
+username/password based site. To follow along, start by cloning the repository
+and checking out the first tutorial git tag: tutorial-1. At each step check out
+the contents of this README and take a look at the source code changes from the
+previous step by running:
+
+  git diff HEAD~1
+
+Once ready, move on to the next step:
+
+  git checkout tutorial-N
+
+...where N is replaced by the step number, 1-5.
