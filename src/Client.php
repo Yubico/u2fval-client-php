@@ -159,7 +159,7 @@ class Client {
       return json_encode($this->curl_send($username . '/authenticate'));
     } catch( U2fValException $e ) {
       if($e->getCode() == 400) {
-        throw new NoDevicesException($e['errorMessage'], $e['errorCode']);
+        throw new NoDevicesException($e->getMessage(), $e->getCode());
       }
     }
   }
