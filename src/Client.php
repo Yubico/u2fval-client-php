@@ -54,13 +54,6 @@ class Client {
     return new Client($endpoint, new NoAuth());
   }
 
-  private static function filtered($path, $filter) {
-    if($filter !== NULL) {
-      $path .= '?filter=' . $filter;
-    }
-    return $path;
-  }
-
   private static function add_props($data, $props) {
     if(is_string($data)) {
       $data = json_decode($data, true);
@@ -91,12 +84,14 @@ class Client {
     $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
     if($status >= 400) {
-      if($status == 401) {
-        throw new BadAuthException($res['errorMessage'], $res['errorCode']);
+      if(isset($res['errorCode'])) {
+        throw U2fValException::fromJson($res);
+      } else if($status == 401) {
+        throw new BadAuthException("Not Authorized", $status);
       } else if($status == 404) {
-        throw new NotFoundException($res['errorMessage'], $res['errorCode']);
+        throw new U2fValClientException("Not Found", $status);
       } else {
-        throw new U2fValException($res['errorMessage'], $res['errorCode']);
+        throw new U2fValClientException("Unknown error", $status);
       }
     }
     return $res;
@@ -136,18 +131,17 @@ class Client {
     return json_encode($this->curl_send(''));
   }
 
-  public function list_devices($username, $filter=NULL) {
-    return $this->curl_send(self::filtered($username . '/', $filter));
+  public function list_devices($username) {
+    return $this->curl_send($username . '/');
   }
 
   public function register_begin($username) {
     return json_encode($this->curl_send($username . '/register'));
   }
 
-  public function register_complete($username, $registerResponse, $properties=NULL, $filter=NULL) {
-    $path = self::filtered($username . '/register', $filter);
+  public function register_complete($username, $registerResponse, $properties=NULL) {
     $registerData = array('registerResponse' => json_decode($registerResponse, true));
-    return $this->curl_send($path, self::add_props($registerData, $properties));
+    return $this->curl_send($username . '/register', self::add_props($registerData, $properties));
   }
 
   public function unregister($username, $handle) {
@@ -155,19 +149,12 @@ class Client {
   }
 
   public function auth_begin($username) {
-    try {
-      return json_encode($this->curl_send($username . '/authenticate'));
-    } catch( U2fValException $e ) {
-      if($e->getCode() == 400) {
-        throw new NoDevicesException($e->getMessage(), $e->getCode());
-      }
-    }
+    return json_encode($this->curl_send($username . '/authenticate'));
   }
 
-  public function auth_complete($username, $authenticateResponse, $properties=NULL, $filter=NULL) {
-    $path = self::filtered($username . '/authenticate', $filter);
+  public function auth_complete($username, $authenticateResponse, $properties=NULL) {
     $authData = array('authenticateResponse' => json_decode($authenticateResponse, true));
-    return $this->curl_send($path, self::add_props($authData, $properties));
+    return $this->curl_send($username . '/authenticate', self::add_props($authData, $properties));
   }
 }
 

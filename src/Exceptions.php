@@ -30,12 +30,41 @@
 
 namespace U2fVal;
 
-class U2fValException extends \Exception {}
+//Exceptions generated on the client.
+class U2fValClientException extends \Exception {}
 
-class ServerUnreachableException extends U2fValException {}
-class BadAuthException extends U2fValException {}
-class NoDevicesException extends U2fValException {}
-class NotFoundException extends U2fValException {}
+class ServerUnreachableException extends U2fValClientException {}
+class BadAuthException extends U2fValClientException {}
 
+//Exceptions sent from the U2FVAL server.
+class U2fValException extends \Exception {
+  private $errorData;
+
+  public function __construct($message = null, $code = 0, $errorData = null) {
+    parent::__construct($message, $code);
+    $this->errorData = $errorData;
+  }
+
+  public function getData() {
+    return $this->errorData;
+  }
+
+  public static function fromJson($response) {
+    switch($response['errorCode']) {
+      case 10:
+        return new BadInputException($response['errorMessage'], $response['errorCode'], $response['errorData']);
+      case 11:
+        return new NoEligableDevicesException($response['errorMessage'], $response['errorCode'], $response['errorData']);
+      case 12:
+        return new DeviceCompromisedException($response['errorMessage'], $response['errorCode'], $response['errorData']);
+      default:
+        return new U2fValException($response['errorMessage'], $response['errorCode'], $response['errorData']);
+    }
+  }
+}
+
+class BadInputException extends U2fValException {}
+class NoEligableDevicesException extends U2fValException {}
+class DeviceCompromisedException extends U2fValException {}
 
 ?>
