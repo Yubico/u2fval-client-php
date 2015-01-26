@@ -64,7 +64,11 @@ class U2fValException extends \Exception {
 }
 
 class BadInputException extends U2fValException {}
-class NoEligableDevicesException extends U2fValException {}
+class NoEligableDevicesException extends U2fValException {
+  public function hasDevices() {
+    return !empty($this->errorData);
+  }
+}
 class DeviceCompromisedException extends U2fValException {}
 
 ?>
