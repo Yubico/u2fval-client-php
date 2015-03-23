@@ -173,7 +173,7 @@ class ApiTokenAuth {
 }
 
 class HttpAuth {
-  public function __construct($username, $password, $type=CURLAUTH_DIGEST) {
+  public function __construct($username, $password, $authtype=CURLAUTH_DIGEST) {
     $this->username = $username;
     $this->password = $password;
     $this->authtype = $authtype;
