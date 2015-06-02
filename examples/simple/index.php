@@ -36,7 +36,7 @@ require_once('../config.php');
 <head>
 <title>PHP U2F example</title>
 
-<script src="chrome-extension://pfboblefjcgdjicmnffhdgionmgcdmne/u2f-api.js"></script>
+<script src="u2f-api.js"></script>
 
 <script>
 <?php
@@ -52,10 +52,8 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if(isset($_POST['action'])) {
       if($_POST['action'] === 'register') {
-        $data = $u2fval->register_begin($user);
-        if(U2fVal\is_error($data)) {
-          echo "alert('error: " . $data['errorMessage'] . "');";
-        } else {
+        try {
+          $data = $u2fval->register_begin($user);
           echo "var data = " . $data . ";";
 ?>
           setTimeout(function() {
@@ -75,14 +73,14 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
               user.value = username;
               form.submit();
             });
-        }, 1000);
+          }, 1000);
 <?php
+        } catch(U2fVal\U2fValException $exception) {
+          echo "alert('error: " . $exception->getMessage() . "');";
         }
       } else if($_POST['action'] === 'authenticate') {
-        $data = $u2fval->auth_begin($user);
-        if(U2fVal\is_error($data)) {
-          echo "alert('error: " . $data['errorMessage'] . "');";
-        } else {
+        try {
+          $data = $u2fval->auth_begin($user);
           echo "var data = " . $data . ";";
 ?>
           setTimeout(function() {
@@ -99,21 +97,23 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
             });
           }, 1000);
 <?php
+        } catch(U2fVal\U2fValException $exception) {
+          echo "alert('error: " . $exception->getMessage() . "');";
         }
       }
     } else if($_POST['register2']) {
-      $data = $u2fval->register_complete($user, $_POST['register2']);
-      if(U2fVal\is_error($data)) {
-        echo "alert('error: " . $data['errorMessage'] . "');";
-      } else {
+      try {
+        $data = $u2fval->register_complete($user, $_POST['register2']);
         echo "alert('success: " . json_encode($data) . "');";
+      } catch(U2fVal\U2fValException $exception) {
+        echo "alert('error: " . $exception->getMessage() . "');";
       }
     } else if($_POST['authenticate2']) {
-      $data = $u2fval->auth_complete($user, $_POST['authenticate2']);
-      if(U2fVal\is_error($data)) {
-        echo "alert('error: " . $data['errorMessage'] . "');";
-      } else {
+      try {
+        $data = $u2fval->auth_complete($user, $_POST['authenticate2']);
         echo "alert('success: " . json_encode($data) . "');";
+      } catch(U2fVal\U2fValException $exception) {
+        echo "alert('error: " . $exception->getMessage() . "');";
       }
     }
   }
