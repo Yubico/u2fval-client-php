@@ -3,13 +3,8 @@ A passwordless sample server allowing a user to register and authenticate U2F
 devices with a U2FVAL server.
 
 === Setup
-To include the required files 
-
-  require_once(dirname(__FILE__)."/../src/Client.php");
-  require_once(dirname(__FILE__)."/../src/Exceptions.php");
-  if(!function_exists("curl_init")) die("You require CURL for PHP");
-
-Or install via Composer using
+To use, you will need to first install the package dependencies with composer.
+In the main project directory run:
 
   $ composer.phar install
 

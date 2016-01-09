@@ -4,13 +4,7 @@
  * Configuration file for all examples.
  */
 
-// Using Composer
 require_once(dirname(__FILE__).'/../vendor/autoload.php');
-/* or by hand
-require_once(dirname(__FILE__)."/../src/Client.php");
-require_once(dirname(__FILE__)."/../src/Exceptions.php");
-if(!function_exists("curl_init")) die("You require CURL for PHP");
-*/
 
 // U2FVAL Configuration - Using API token authentication:
 $u2fval = U2fVal\Client::withApiToken(
