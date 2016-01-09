@@ -9,7 +9,8 @@ this package note that the range specifies every single year in that
 closed interval.
 
 === Dependencies
-You require CURL for PHP to use this library.
-To setup when composer is available, run:
+Dependencies are managed with composer, see https://getcomposer.org/
+for information about obtaining that.
+To setup dependencies when composer is available, run:
 
   $ composer.phar install
