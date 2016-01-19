@@ -39,7 +39,7 @@ if(empty($_GET["action"])) { // Let the User choose an option and ID for testing
           }
           window.location = window.location.href + "&data=" + encodeURIComponent(JSON.stringify(resp));
         });
-        alert("Touch Yubikey now (and create a gui for this app)");
+        alert("Close the dialog, then touch the flashing Yubikey.");
       }, 1000);
     </script>
     Please wait...
